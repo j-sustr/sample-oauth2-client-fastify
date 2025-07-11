@@ -1,0 +1,44 @@
+<html>
+<head>
+  <title>Example App</title>
+</head>
+<body>
+
+  <div id="login">
+    <a href="https://foursquare.com/oauth2/authenticate?client_id=IFMKONPESAZI2NG3D2QWFTJISPVEITNB2IEKTZ0WVLGZKEFI&response_type=token&redirect_uri=http://localhost/foursquare.html">Log In</a>
+  </div>
+
+  <div id="signed-in" style="display: none;">
+    <h2 id="header">Your last 10 checkins</h2>
+    <div id="checkins">
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    let token;
+    const hash = window.location.hash;
+
+    if (hash && (token = hash.match(/access_token=([^&]+)/)?.[1])) {
+      document.getElementById('login').style.display = 'none';
+
+      const checkins_url = `https://api.foursquare.com/v2/users/self/checkins?v=20150201&limit=10&oauth_token=${token}`;
+
+      fetch(checkins_url)
+        .then(response => response.json())
+        .then(data => {
+          const checkins = data.response.checkins.items;
+          let html = '';
+          checkins.forEach(c => {
+            html += `<a href="https://foursquare.com/_/checkin/${c.id}">${c.venue.name}</a><br>`;
+          });
+          document.getElementById('checkins').innerHTML = html;
+          document.getElementById('signed-in').style.display = 'block';
+        })
+        .catch(error => console.error('Error fetching checkins:', error));
+    }
+  });
+  </script>
+
+</body>
+</html>
